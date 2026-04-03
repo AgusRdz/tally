@@ -9,3 +9,7 @@ coverage.out
 
 # temp files
 *.tmp
+
+# metadata files
+CLAUDE.md
+PLAN.md
