@@ -44,9 +44,10 @@ func Check(s *state.Session, cfg *config.Config) string {
 
 	case LevelWarn:
 		// Warn threshold: emit once, then silence until compact threshold.
-		if s.WarningsEmitted > 0 {
+		if s.WarnEmitted {
 			return ""
 		}
+		s.WarnEmitted = true
 		s.WarningsEmitted++
 		return fmt.Sprintf(
 			"⚠ tally: context ~%.0f%% full (est. %s/%s tokens) | %d tool calls\nConsider wrapping up the current task before the next major operation.",

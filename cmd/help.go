@@ -6,6 +6,7 @@ import (
 	"strings"
 
 	"github.com/agusrdz/tally/hooks"
+	"github.com/mattn/go-isatty"
 )
 
 // Help prints usage information.
@@ -55,13 +56,31 @@ func Init(version string) {
 func Uninstall(version string) {
 	hooks.Uninstall()
 	home, _ := os.UserHomeDir()
-	fmt.Println("tally uninstalled")
-	fmt.Println("  hooks removed from ~/.claude/settings.json")
 	fmt.Printf("  config location: %s/.config/tally/config.yml\n", home)
 	fmt.Println("\nbinary not removed — delete manually or via your package manager")
 }
 
-// color helpers (forwarded from main package via re-declaration in cmd)
-func bold(s string) string   { return "\033[1m" + s + "\033[0m" }
-func dim(s string) string    { return "\033[2m" + s + "\033[0m" }
-func cyan(s string) string   { return "\033[36m" + s + "\033[0m" }
+func isTTY() bool {
+	return isatty.IsTerminal(os.Stdout.Fd()) || isatty.IsCygwinTerminal(os.Stdout.Fd())
+}
+
+func bold(s string) string {
+	if !isTTY() {
+		return s
+	}
+	return "\033[1m" + s + "\033[0m"
+}
+
+func dim(s string) string {
+	if !isTTY() {
+		return s
+	}
+	return "\033[2m" + s + "\033[0m"
+}
+
+func cyan(s string) string {
+	if !isTTY() {
+		return s
+	}
+	return "\033[36m" + s + "\033[0m"
+}

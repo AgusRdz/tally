@@ -15,6 +15,7 @@ type Session struct {
 	EstimatedTokens    int    `json:"estimated_tokens"`
 	BaselineTokens     int    `json:"baseline_tokens"`
 	ToolCalls          int    `json:"tool_calls"`
+	WarnEmitted        bool   `json:"warn_emitted"`
 	WarningsEmitted    int    `json:"warnings_emitted"`
 	CompactRecommended bool   `json:"compact_recommended"`
 	LastReminderCall   int    `json:"last_reminder_call"`
@@ -88,6 +89,7 @@ func Save(s *Session) error {
 func Reset(s *Session, ctxRestoreBaseline int) {
 	s.EstimatedTokens = 0
 	s.BaselineTokens = ctxRestoreBaseline
+	s.WarnEmitted = false
 	s.WarningsEmitted = 0
 	s.CompactRecommended = false
 	s.LastReminderCall = 0
