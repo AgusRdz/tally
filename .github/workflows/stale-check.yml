@@ -1,0 +1,46 @@
+name: Stale branch check
+
+on:
+  pull_request_target:
+    types: [opened, synchronize, reopened]
+
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: "true"
+
+jobs:
+  check-up-to-date:
+    runs-on: ubuntu-latest
+    permissions:
+      pull-requests: write
+      issues: write
+
+    steps:
+      - name: Check if branch is behind main
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const { data: comparison } = await github.rest.repos.compareCommitsWithBasehead({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              basehead: `main...${context.payload.pull_request.head.sha}`,
+            });
+
+            if (comparison.behind_by > 0) {
+              const body = [
+                `> [!WARNING]`,
+                `> This branch is **${comparison.behind_by} commit(s) behind \`main\`**.`,
+                `>`,
+                `> Please rebase or merge \`main\` into your branch before this PR can be reviewed.`,
+              ].join("\n");
+
+              try {
+                await github.rest.issues.createComment({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  issue_number: context.payload.pull_request.number,
+                  body,
+                });
+              } catch (err) {
+                console.log(`Could not post comment (insufficient permissions): ${err.message}`);
+              }
+            }
