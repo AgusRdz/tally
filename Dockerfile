@@ -16,4 +16,4 @@ RUN go mod download 2>/dev/null || true
 
 COPY . .
 
-CMD ["go", "build", "-o", "bin/budget", "."]
+CMD ["go", "build", "-o", "bin/tally", "."]

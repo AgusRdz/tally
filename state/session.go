@@ -17,6 +17,7 @@ type Session struct {
 	ToolCalls          int    `json:"tool_calls"`
 	WarningsEmitted    int    `json:"warnings_emitted"`
 	CompactRecommended bool   `json:"compact_recommended"`
+	LastReminderCall   int    `json:"last_reminder_call"`
 	IsSubagent         bool   `json:"is_subagent"`
 }
 
@@ -89,6 +90,7 @@ func Reset(s *Session, ctxRestoreBaseline int) {
 	s.BaselineTokens = ctxRestoreBaseline
 	s.WarningsEmitted = 0
 	s.CompactRecommended = false
+	s.LastReminderCall = 0
 	s.ToolCalls = 0
 }
 

@@ -24,13 +24,15 @@ func Check(s *state.Session, cfg *config.Config) string {
 
 	switch level(fillPct, cfg) {
 	case LevelCompact:
-		// After compact_threshold: only emit every ReminderIntervalCalls tool calls.
+		// After compact_threshold: only emit every ReminderIntervalCalls tool calls
+		// measured from the last reminder, not from an arbitrary modulo boundary.
 		if s.CompactRecommended {
-			if s.ToolCalls%cfg.ReminderIntervalCalls != 0 {
+			if s.ToolCalls-s.LastReminderCall < cfg.ReminderIntervalCalls {
 				return ""
 			}
 		}
 		s.CompactRecommended = true
+		s.LastReminderCall = s.ToolCalls
 		s.WarningsEmitted++
 		return fmt.Sprintf(
 			"⚡ tally: context ~%.0f%% full (est. %s/%s tokens) | %d tool calls\nRecommend: /compact now, at a clean task boundary, to avoid mid-task compaction.",
