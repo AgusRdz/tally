@@ -21,14 +21,8 @@ func Update(current string) {
 		os.Exit(1)
 	}
 
-	if latest == current || (current != "dev" && normalize(latest) == normalize(current)) {
+	if normalize(latest) == normalize(current) {
 		fmt.Printf("tally %s is already up to date\n", current)
-		return
-	}
-
-	if current == "dev" {
-		fmt.Printf("tally dev build — latest release is %s\n", latest)
-		fmt.Println("install a release build to enable updates")
 		return
 	}
 
