@@ -16,7 +16,6 @@ func Reset() {
 	cfg, err := config.Load()
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "tally: config error: %v\n", err)
-		respond("")
 		return
 	}
 
@@ -41,9 +40,5 @@ func Reset() {
 
 	if err := state.Save(s); err != nil {
 		fmt.Fprintf(os.Stderr, "tally: failed to save session: %v\n", err)
-		return
 	}
-
-	// PreCompact hook output must be action:continue.
-	respond("")
 }
