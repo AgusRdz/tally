@@ -31,6 +31,8 @@ func main() {
 		cmd.Init(version)
 	case "uninstall":
 		cmd.Uninstall(version)
+	case "update":
+		cmd.Update(version)
 	default:
 		fmt.Fprintf(os.Stderr, "unknown command %q\nrun 'tally help'\n", os.Args[1])
 		os.Exit(1)

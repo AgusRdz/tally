@@ -41,6 +41,7 @@ func Help(version string) {
 	b.WriteString("\n")
 
 	b.WriteString(section("Other"))
+	b.WriteString(row("update", "Update to the latest release"))
 	b.WriteString(row("version", "Show version"))
 	b.WriteString(row("help", "Show this help"))
 
