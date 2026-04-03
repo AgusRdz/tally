@@ -10,14 +10,21 @@ import (
 )
 
 // Status prints the current session estimate to stdout (human-readable, not hook JSON).
-func Status() {
+func Status(args []string) {
 	cfg, err := config.Load()
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "tally: config error: %v\n", err)
 		os.Exit(1)
 	}
 
-	sessionID := state.SessionID()
+	sessionID := state.LatestSessionID()
+	for _, a := range args {
+		if a == "--manual" {
+			sessionID = "manual"
+			break
+		}
+	}
+
 	s, err := state.Load(sessionID, cfg.Baselines.SessionStart)
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "tally: failed to load session: %v\n", err)

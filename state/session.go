@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"os"
 	"path/filepath"
+	"strings"
 	"time"
 )
 
@@ -28,6 +29,43 @@ func SessionID() string {
 		return id
 	}
 	return "manual"
+}
+
+// LatestSessionID returns the session ID of the most recently updated session
+// file, excluding "manual". Falls back to "manual" if none found.
+func LatestSessionID() string {
+	cacheDir, _ := os.UserCacheDir()
+	dir := filepath.Join(cacheDir, "tally")
+
+	entries, err := os.ReadDir(dir)
+	if err != nil {
+		return "manual"
+	}
+
+	var latest string
+	var latestTime int64
+	for _, e := range entries {
+		if e.IsDir() || !strings.HasPrefix(e.Name(), "session_") || !strings.HasSuffix(e.Name(), ".json") {
+			continue
+		}
+		id := strings.TrimSuffix(strings.TrimPrefix(e.Name(), "session_"), ".json")
+		if id == "manual" {
+			continue
+		}
+		info, err := e.Info()
+		if err != nil {
+			continue
+		}
+		if info.ModTime().Unix() > latestTime {
+			latestTime = info.ModTime().Unix()
+			latest = id
+		}
+	}
+
+	if latest == "" {
+		return "manual"
+	}
+	return latest
 }
 
 func statePath(sessionID string) string {

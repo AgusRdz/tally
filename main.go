@@ -20,7 +20,7 @@ func main() {
 	case "reset":
 		cmd.Reset()
 	case "status":
-		cmd.Status()
+		cmd.Status(os.Args[2:])
 	case "config":
 		cmd.Config(os.Args[2:])
 	case "--version", "version":
