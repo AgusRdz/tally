@@ -67,7 +67,9 @@ func Root() {
 	// Accumulate: estimate tokens from the tool_response field bytes.
 	resultBytes := len(input.ToolResponse)
 	tokens := estimate.Tokens(input.ToolName, resultBytes, cfg.ToolWeights)
-	s.AddTokens(input.ToolName, tokens)
+	if err := state.AddTokens(s, input.ToolName, tokens); err != nil {
+		fmt.Fprintf(os.Stderr, "tally: failed to record tokens: %v\n", err)
+	}
 	s.ToolCalls++
 
 	// Evaluate thresholds and get message (may be empty).
