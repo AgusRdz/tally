@@ -1,0 +1,11 @@
+# build output
+bin/
+
+# signing key — never commit
+signing.pem
+
+# coverage
+coverage.out
+
+# temp files
+*.tmp
