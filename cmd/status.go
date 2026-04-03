@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"sort"
 	"time"
 
 	"github.com/agusrdz/tally/config"
@@ -19,12 +20,22 @@ func Status(args []string) {
 		os.Exit(1)
 	}
 
-	sessionID := state.LatestSessionID()
+	// Resolve session: match by cwd by default, --latest for global latest, --manual for manual.
+	var sessionID string
 	for _, a := range args {
-		if a == "--manual" {
+		switch a {
+		case "--manual":
 			sessionID = "manual"
-			break
+		case "--latest":
+			sessions, _ := state.AllSessions()
+			if len(sessions) > 0 {
+				sessionID = sessions[0].SessionID
+			}
 		}
+	}
+	if sessionID == "" {
+		cwd, _ := os.Getwd()
+		sessionID = state.SessionForCwd(cwd)
 	}
 
 	s, err := state.Load(sessionID, cfg.Baselines.SessionStart)
@@ -45,7 +56,7 @@ func Status(args []string) {
 	}
 
 	baselineLabel := "session start"
-	if s.BaselineTokens < 10000 {
+	if s.BaselineTokens < cfg.Baselines.SessionStart {
 		baselineLabel = "post-compact"
 	}
 
@@ -59,6 +70,23 @@ func Status(args []string) {
 		formatNum(total), fillPct, formatNum(cfg.MaxTallyTokens))
 	fmt.Printf("  tool calls: %d\n", s.ToolCalls)
 	fmt.Printf("  warnings:   %d\n", s.WarningsEmitted)
+
+	if len(s.ToolBreakdown) > 0 {
+		fmt.Printf("\n  by tool:\n")
+		type toolStat struct {
+			name   string
+			tokens int
+		}
+		var stats []toolStat
+		for tool, tokens := range s.ToolBreakdown {
+			stats = append(stats, toolStat{tool, tokens})
+		}
+		sort.Slice(stats, func(i, j int) bool { return stats[i].tokens > stats[j].tokens })
+		for _, ts := range stats {
+			pct := float64(ts.tokens) / float64(s.EstimatedTokens) * 100
+			fmt.Printf("    %-12s %s tokens (%.0f%%)\n", ts.name, formatNum(ts.tokens), pct)
+		}
+	}
 }
 
 func formatNum(n int) string {

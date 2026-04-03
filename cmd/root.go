@@ -67,7 +67,7 @@ func Root() {
 	// Accumulate: estimate tokens from the tool_response field bytes.
 	resultBytes := len(input.ToolResponse)
 	tokens := estimate.Tokens(input.ToolName, resultBytes, cfg.ToolWeights)
-	s.EstimatedTokens += tokens
+	s.AddTokens(input.ToolName, tokens)
 	s.ToolCalls++
 
 	// Evaluate thresholds and get message (may be empty).
