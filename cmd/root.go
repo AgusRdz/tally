@@ -12,10 +12,11 @@ import (
 	"github.com/agusrdz/tally/threshold"
 )
 
-// hookInput is the PostToolUse stdin payload.
+// hookInput is the PostToolUse stdin payload from Claude Code.
 type hookInput struct {
-	Tool       string          `json:"tool"`
-	ToolResult json.RawMessage `json:"tool_result"`
+	SessionID    string          `json:"session_id"`
+	ToolName     string          `json:"tool_name"`
+	ToolResponse json.RawMessage `json:"tool_response"`
 }
 
 // Root handles the PostToolUse hook invocation (no subcommand, reads stdin).
@@ -46,7 +47,10 @@ func Root() {
 		return
 	}
 
-	sessionID := state.SessionID()
+	sessionID := input.SessionID
+	if sessionID == "" {
+		sessionID = "manual"
+	}
 	s, err := state.Load(sessionID, cfg.Baselines.SessionStart)
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "tally: failed to load session: %v\n", err)
@@ -54,9 +58,9 @@ func Root() {
 		return
 	}
 
-	// Accumulate: estimate tokens from the tool_result field bytes.
-	resultBytes := len(input.ToolResult)
-	tokens := estimate.Tokens(input.Tool, resultBytes, cfg.ToolWeights)
+	// Accumulate: estimate tokens from the tool_response field bytes.
+	resultBytes := len(input.ToolResponse)
+	tokens := estimate.Tokens(input.ToolName, resultBytes, cfg.ToolWeights)
 	s.EstimatedTokens += tokens
 	s.ToolCalls++
 
