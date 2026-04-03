@@ -15,6 +15,7 @@ import (
 // hookInput is the PostToolUse stdin payload from Claude Code.
 type hookInput struct {
 	SessionID    string          `json:"session_id"`
+	Cwd          string          `json:"cwd"`
 	ToolName     string          `json:"tool_name"`
 	ToolResponse json.RawMessage `json:"tool_response"`
 }
@@ -56,6 +57,11 @@ func Root() {
 		fmt.Fprintf(os.Stderr, "tally: failed to load session: %v\n", err)
 		respond("")
 		return
+	}
+
+	// Capture cwd on first tool call of the session.
+	if s.Cwd == "" && input.Cwd != "" {
+		s.Cwd = input.Cwd
 	}
 
 	// Accumulate: estimate tokens from the tool_response field bytes.

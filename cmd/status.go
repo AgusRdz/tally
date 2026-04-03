@@ -3,6 +3,8 @@ package cmd
 import (
 	"fmt"
 	"os"
+	"path/filepath"
+	"time"
 
 	"github.com/agusrdz/tally/config"
 	"github.com/agusrdz/tally/state"
@@ -33,11 +35,26 @@ func Status(args []string) {
 
 	total := s.TotalTokens()
 	fillPct := threshold.FillPct(s, cfg)
+	started := time.Unix(s.StartedAt, 0).Format("2006-01-02 15:04")
+
+	project := s.Cwd
+	if project == "" {
+		project = "unknown"
+	} else {
+		project = filepath.Base(project)
+	}
+
+	baselineLabel := "session start"
+	if s.BaselineTokens < 10000 {
+		baselineLabel = "post-compact"
+	}
 
 	fmt.Printf("tally status\n")
+	fmt.Printf("  project:    %s\n", project)
+	fmt.Printf("  started:    %s\n", started)
 	fmt.Printf("  session:    %s\n", s.SessionID)
 	fmt.Printf("  estimated:  %s tokens (est.)\n", formatNum(s.EstimatedTokens))
-	fmt.Printf("  baseline:   %s tokens\n", formatNum(s.BaselineTokens))
+	fmt.Printf("  baseline:   %s tokens (%s)\n", formatNum(s.BaselineTokens), baselineLabel)
 	fmt.Printf("  total:      %s tokens (~%.0f%% of %s)\n",
 		formatNum(total), fillPct, formatNum(cfg.MaxTallyTokens))
 	fmt.Printf("  tool calls: %d\n", s.ToolCalls)

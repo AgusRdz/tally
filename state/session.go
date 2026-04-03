@@ -11,6 +11,7 @@ import (
 // Session holds the persistent per-session tally state.
 type Session struct {
 	SessionID          string `json:"session_id"`
+	Cwd                string `json:"cwd,omitempty"`
 	StartedAt          int64  `json:"started_at"`
 	LastUpdated        int64  `json:"last_updated"`
 	EstimatedTokens    int    `json:"estimated_tokens"`
