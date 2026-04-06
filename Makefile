@@ -3,8 +3,21 @@
 VERSION ?= $(shell git describe --tags --always --dirty 2>/dev/null || echo dev)
 LDFLAGS := -s -w -X main.version=$(VERSION)
 
+UNAME_S := $(shell uname -s)
+ifeq ($(findstring MINGW,$(UNAME_S)),MINGW)
+  GOOS   ?= windows
+  GOARCH ?= amd64
+  EXT    := .exe
+  INSTALL_DIR := $(subst \,/,$(LOCALAPPDATA))/Programs/tally
+else
+  GOOS   ?= linux
+  GOARCH ?= amd64
+  EXT    :=
+  INSTALL_DIR := $(HOME)/.local/bin
+endif
+
 build:
-	docker compose run --rm dev go build -ldflags="$(LDFLAGS)" -o bin/tally .
+	docker compose run --rm dev sh -c "CGO_ENABLED=0 GOOS=$(GOOS) GOARCH=$(GOARCH) go build -ldflags='$(LDFLAGS)' -o bin/tally$(EXT) ."
 
 test:
 	docker compose run --rm dev go test ./... -v
@@ -16,14 +29,6 @@ coverage:
 clean:
 	rm -rf bin/
 
-UNAME_S := $(shell uname -s)
-ifeq ($(findstring MINGW,$(UNAME_S)),MINGW)
-  INSTALL_DIR := $(shell echo "$$LOCALAPPDATA/Programs/tally" | sed 's|\\|/|g')
-  EXT := .exe
-else
-  INSTALL_DIR := $(HOME)/.local/bin
-  EXT :=
-endif
 
 install: build
 	mkdir -p "$(INSTALL_DIR)"
@@ -38,7 +43,7 @@ release: changelog
 	if [ -z "$$NEXT" ]; then echo "usage: make release NEXT=v1.2.3"; exit 1; fi; \
 	git add CHANGELOG.md && \
 	git commit -m "chore: update changelog for $$NEXT" && \
-	git tag $$NEXT && \
+	git tag -a $$NEXT -m "$$NEXT" && \
 	{ git push origin HEAD $$NEXT && echo "released $$NEXT"; } || { git tag -d $$NEXT; git reset --soft HEAD~1; echo "push failed — tag and commit rolled back"; exit 1; }
 
 release-patch:

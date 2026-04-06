@@ -2,7 +2,7 @@
 
 All notable changes to tally are documented here.
 
-## [Unreleased]
+## [0.2.0] - 2026-04-03
 
 ### Features
 - SQLite backend for cross-session analytics and per-tool token breakdown

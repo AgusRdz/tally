@@ -25,6 +25,8 @@ func main() {
 		cmd.Config(os.Args[2:])
 	case "--version", "version":
 		cmd.Version(version)
+	case "history":
+		cmd.History()
 	case "--help", "help", "-h":
 		cmd.Help(version)
 	case "init", "setup":
