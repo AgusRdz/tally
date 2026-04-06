@@ -4,6 +4,11 @@ All notable changes to tally are documented here.
 
 ## [Unreleased]
 
+### Bug Fixes
+- Correct history token percentages; add tally forget command
+([063d298](https://github.com/AgusRdz/tally/commit/063d2985eddcdaae538fd8ae0e104c6855718540))
+## [0.3.0] - 2026-04-06
+
 ### Features
 - Tally history command + fix make install for Windows cross-compile
 ([f778436](https://github.com/AgusRdz/tally/commit/f7784360bffad400ca1911de26a6dfb2bf68ea91))
