@@ -10,6 +10,9 @@ coverage.out
 # temp files
 *.tmp
 
+# Claude Code session data
+.claude/
+
 # metadata files
 CLAUDE.md
 PLAN.md
