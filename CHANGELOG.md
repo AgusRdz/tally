@@ -2,6 +2,11 @@
 
 All notable changes to tally are documented here.
 
+## [Unreleased]
+
+### Features
+- Tally history command + fix make install for Windows cross-compile
+([f778436](https://github.com/AgusRdz/tally/commit/f7784360bffad400ca1911de26a6dfb2bf68ea91))
 ## [0.2.0] - 2026-04-03
 
 ### Features
