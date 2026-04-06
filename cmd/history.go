@@ -50,10 +50,10 @@ func History() {
 			projects[name] = p
 		}
 		p.sessionCount++
-		p.totalTokens += s.TotalTokens()
 		p.totalCalls += s.ToolCalls
 		for tool, tokens := range s.ToolBreakdown {
 			p.toolBreakdown[tool] += tokens
+			p.totalTokens += tokens
 		}
 	}
 
@@ -87,15 +87,14 @@ func History() {
 			p.name, p.sessionCount, formatNum(p.totalTokens), p.totalCalls, topTool)
 	}
 
-	// Aggregate all tool breakdown across all sessions (using EstimatedTokens only for %)
+	// Aggregate all tool breakdown across all sessions (tool_events are source of truth)
 	allTools := map[string]int{}
-	estimatedGrand := 0
 	for _, s := range filtered {
-		estimatedGrand += s.EstimatedTokens
 		for tool, tokens := range s.ToolBreakdown {
 			allTools[tool] += tokens
 		}
 	}
+	estimatedGrand := grandTotal
 
 	// Sort tools by tokens desc, top 5
 	type toolEntry struct {

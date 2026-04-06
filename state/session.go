@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"fmt"
 	"os"
+	"path/filepath"
 	"time"
 )
 
@@ -246,6 +247,61 @@ func queryBreakdown(db *sql.DB, sessionID string) (map[string]int, error) {
 		m[tool] = tokens
 	}
 	return m, rows.Err()
+}
+
+// DeleteProject removes all sessions (and their tool_events) whose cwd basename matches projectName.
+// "unknown" matches sessions with an empty cwd. Returns the number of sessions deleted.
+func DeleteProject(projectName string) (int, error) {
+	db, err := DB()
+	if err != nil {
+		return 0, fmt.Errorf("db unavailable: %w", err)
+	}
+
+	// Collect matching session IDs in Go (filepath.Base logic).
+	rows, err := db.Query(`SELECT session_id, cwd FROM sessions WHERE session_id != 'manual'`)
+	if err != nil {
+		return 0, err
+	}
+	var ids []string
+	for rows.Next() {
+		var id, cwd string
+		if err := rows.Scan(&id, &cwd); err != nil {
+			continue
+		}
+		name := "unknown"
+		if cwd != "" {
+			name = filepath.Base(cwd)
+		}
+		if name == projectName {
+			ids = append(ids, id)
+		}
+	}
+	rows.Close()
+	if err := rows.Err(); err != nil {
+		return 0, err
+	}
+	if len(ids) == 0 {
+		return 0, nil
+	}
+
+	tx, err := db.Begin()
+	if err != nil {
+		return 0, err
+	}
+	for _, id := range ids {
+		if _, err := tx.Exec(`DELETE FROM tool_events WHERE session_id = ?`, id); err != nil {
+			_ = tx.Rollback()
+			return 0, err
+		}
+		if _, err := tx.Exec(`DELETE FROM sessions WHERE session_id = ?`, id); err != nil {
+			_ = tx.Rollback()
+			return 0, err
+		}
+	}
+	if err := tx.Commit(); err != nil {
+		return 0, err
+	}
+	return len(ids), nil
 }
 
 func boolToInt(b bool) int {

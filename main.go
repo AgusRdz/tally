@@ -27,6 +27,8 @@ func main() {
 		cmd.Version(version)
 	case "history":
 		cmd.History()
+	case "forget":
+		cmd.Forget(os.Args[2:])
 	case "--help", "help", "-h":
 		cmd.Help(version)
 	case "init", "setup":
